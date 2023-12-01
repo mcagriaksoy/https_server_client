@@ -1,7 +1,7 @@
-# Mehmet Cagri Aksou - 2023 Q4
+# Mehmet Cagri Aksou - 2023
 
 CC = g++
-CPP_FLAGS = -O3 -std=c++20 -Wall -I /usr/local/include/gtest/ -DOPENSSL_SUPPRESS_DEPRECATED
+CPP_FLAGS = -O3 -std=c++11 -Wall -I /usr/local/include/gtest/
 LIBS = -lssl -lcrypto
 
 SRC_DIR = $(CURDIR)/src
@@ -17,11 +17,11 @@ OBJ_FILES += $(patsubst $(TEST_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(TEST_FILES))
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@echo ">> Compiling $<"
-	$(CC) $(CPP_FLAGS) -c -o $@ $< $(LIBS)
+	$(CC) $(CPP_FLAGS) $(LIBS) -c -o $@ $< $(LIBS)
 
 $(BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp
 	@echo ">> Compiling $<"
-	$(CC) $(CPP_FLAGS) -c -o $@ $< $(LIBS)
+	$(CC) $(CPP_FLAGS) $(LIBS) -c -o $@ $< $(LIBS)
 
 .PHONY : all
 all: http_server_client

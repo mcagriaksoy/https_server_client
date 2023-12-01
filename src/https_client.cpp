@@ -6,21 +6,34 @@
 client_error_code https_client(std::string &str)
 {
     // HTTPS
-    httplib::Client cli("http://127.0.0.1:8080");
+    httplib::Client cli("https://127.0.0.1:8080");
 
-    auto res = cli.Get("/hi");
-    if (res->status != 200)
+    // Use your CA bundle
+    cli.set_ca_cert_path("/home/mcagriaksoy/https_server_client/cert/cert.pem");
+
+    // Disable cert verification
+    cli.enable_server_certificate_verification(false);
+
+    try
     {
-        std::cout << "HTTP(s) Error Code: " << res->status << std::endl;
+        auto res = cli.Get("/hi");
+        if (res->status != 200)
+        {
+            std::cout << "HTTP(s) Error Code: " << res->status << std::endl;
+            return CLIENT_FAILURE;
+        }
+        std::cout << "HTTP(s) /hi Response: " << res->body << std::endl;
+
+        res = cli.Get("/mainPage");
+        std::cout << "HTTP(s) /mainPage Response: " << res->body << std::endl;
+        str = res->body;
+
+        res = cli.Post("/post", "text", "text/plain");
+    }
+    catch (const std::exception &e)
+    {
+        std::cout << e.what() << std::endl;
         return CLIENT_FAILURE;
     }
-
-    std::cout << "HTTP(s) /hi Response: " << res->body << std::endl;
-
-    res = cli.Get("/mainPage");
-    std::cout << "HTTP(s) /mainPage Response: " << res->body << std::endl;
-    str = res->body;
-
-    res = cli.Post("/post", "text", "text/plain");
     return CLIENT_SUCCESS;
 }
