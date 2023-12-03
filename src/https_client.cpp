@@ -3,37 +3,50 @@
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "../include/https.h"
 
-client_error_code https_client(std::string &str)
+client_error_code https_client(const std::string &ip_addr, const int port, std::string &output)
 {
-    // HTTPS
-    httplib::Client cli("https://127.0.0.1:8080");
+    if (ip_addr.empty() || port <= 0)
+    {
+        std::cout << "Invalid input!" << std::endl;
+        return CLIENT_FAILURE;
+    }
 
-    // Use your CA bundle
-    cli.set_ca_cert_path("/home/mcagriaksoy/https_server_client/cert/cert.pem");
+    if (ip_addr.size() > 15)
+    {
+        std::cout << "Invalid ip address!" << std::endl;
+        return CLIENT_FAILURE;
+    }
 
-    // Disable cert verification
-    cli.enable_server_certificate_verification(false);
-
+    // Call constructor with ip address and port number!
+    httplib::Client cli(ip_addr, port);
     try
     {
-        auto res = cli.Get("/hi");
-        if (res->status != 200)
-        {
-            std::cout << "HTTP(s) Error Code: " << res->status << std::endl;
-            return CLIENT_FAILURE;
-        }
-        std::cout << "HTTP(s) /hi Response: " << res->body << std::endl;
-
-        res = cli.Get("/mainPage");
-        std::cout << "HTTP(s) /mainPage Response: " << res->body << std::endl;
-        str = res->body;
-
-        res = cli.Post("/post", "text", "text/plain");
+        // Use the CA bundle
+        cli.set_ca_cert_path(GLOBAL_CERT_LOCATION);
+        // Disable cert verification
+        cli.enable_server_certificate_verification(true);
     }
     catch (const std::exception &e)
     {
-        std::cout << e.what() << std::endl;
+        std::cout << "Throw: " << e.what() << std::endl;
         return CLIENT_FAILURE;
     }
+
+    auto res = cli.Get("/");
+    if (res)
+    {
+        std::cout << res->status << std::endl;
+        std::cout << res->get_header_value("Content-Type") << std::endl;
+        std::cout << res->body << std::endl;
+    }
+    else
+    {
+        auto result = cli.get_openssl_verify_result();
+        if (result)
+        {
+            std::cout << "verify error: " << X509_verify_cert_error_string(result) << std::endl;
+        }
+    }
+
     return CLIENT_SUCCESS;
 }
