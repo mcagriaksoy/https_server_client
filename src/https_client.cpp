@@ -18,7 +18,7 @@ client_error_code https_client(const std::string &ip_addr, const int port, std::
     }
 
     // Call constructor with ip address and port number!
-    httplib::Client cli(ip_addr, port);
+    httplib::SSLClient cli(ip_addr, port);
     try
     {
         // Use the CA bundle
